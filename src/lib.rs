@@ -163,9 +163,23 @@ pub struct Responses {
     modelVersion: String,
 }
 
-pub fn decode_gemini(response: &str) -> Result<Responses, serde_json::Error> {
-    let response = serde_json::from_str::<Responses>(response);
-    response
+#[derive(Serialize, Deserialize, Debug)]
+struct ResponseError {
+    error: InnerError,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct InnerError {
+    message: String,
+}
+
+pub fn decode_gemini(response: &str) -> Result<Responses, String> {
+    let Ok(response) = serde_json::from_str::<Responses>(response) else {
+        let e = serde_json::from_str::<ResponseError>(response)
+            .map_err(|_| "Unable to parse response".to_string())?;
+        return Err(e.error.message);
+    };
+    Ok(response)
 }
 
 pub struct Pair<'key> {
