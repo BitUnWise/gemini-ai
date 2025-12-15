@@ -136,7 +136,6 @@ pub enum Memorys {
 pub struct Candidate {
     pub content: Content,
     finishReason: String,
-    avgLogprobs: f64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -176,7 +175,7 @@ struct InnerError {
 pub fn decode_gemini(response: &str) -> Result<Responses, String> {
     let Ok(response) = serde_json::from_str::<Responses>(response) else {
         let e = serde_json::from_str::<ResponseError>(response)
-            .map_err(|_| "Unable to parse response".to_string())?;
+            .map_err(|e| format!("Unable to parse response {e}"))?;
         return Err(e.error.message);
     };
     Ok(response)
